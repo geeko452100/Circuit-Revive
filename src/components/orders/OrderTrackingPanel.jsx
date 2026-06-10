@@ -74,7 +74,7 @@ export default function OrderTrackingPanel({ order, onTrackingUpdated, showRefre
         </ul>
       )}
 
-      {showRefresh && (order.carrier ?? 'ups') === 'ups' && (
+      {showRefresh && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={handleRefresh} disabled={refreshing}>
             {refreshing ? 'Refreshing…' : 'Refresh tracking'}

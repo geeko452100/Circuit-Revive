@@ -11,16 +11,16 @@ async function loadCatalog(includeInactive = false) {
 
   const { data, error: fetchError } = await fetchProducts({ includeInactive })
 
-  if (fetchError || !data?.length) {
+  if (fetchError) {
     console.warn('Using local catalog fallback', fetchError)
     return {
       products: seedProducts,
       source: 'local',
-      error: fetchError?.message ?? null,
+      error: fetchError.message,
     }
   }
 
-  return { products: data, source: 'supabase', error: null }
+  return { products: data ?? [], source: 'supabase', error: null }
 }
 
 export function ProductsProvider({ children }) {

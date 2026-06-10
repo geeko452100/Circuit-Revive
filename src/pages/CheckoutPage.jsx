@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createOrder } from '../api/orders'
 import { useAuth } from '../hooks/useAuth'
@@ -26,6 +26,14 @@ export default function CheckoutPage() {
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const nameFromProfile =
+      profile?.full_name?.trim() || user?.user_metadata?.full_name?.trim()
+    if (!nameFromProfile) return
+
+    setAddress((prev) => (prev.name.trim() ? prev : { ...prev, name: nameFromProfile }))
+  }, [profile?.full_name, user?.user_metadata?.full_name])
 
   if (items.length === 0) {
     return (

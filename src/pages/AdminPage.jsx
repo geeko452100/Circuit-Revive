@@ -133,13 +133,24 @@ export default function AdminPage() {
     setShowForm(true)
   }
 
-  function seedCatalog() {
+  async function seedCatalog() {
     setEditingProduct(null)
     setShowForm(false)
-    Promise.all(seedProducts.map((p) => upsertProduct(p))).then(() => {
-      setMessage('Seed catalog uploaded to Supabase.')
+    setMessage('')
+
+    const results = await Promise.all(seedProducts.map((p) => upsertProduct(p)))
+    const failed = results.filter((result) => result.error)
+
+    if (failed.length > 0) {
+      setMessage(
+        `Failed to upload ${failed.length} of ${seedProducts.length} products: ${failed[0].error.message}`,
+      )
       refreshAdminProducts()
-    })
+      return
+    }
+
+    setMessage('Seed catalog uploaded to Supabase.')
+    refreshAdminProducts()
   }
 
   return (

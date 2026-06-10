@@ -2,7 +2,7 @@ import { apiRequest } from '../lib/apiClient'
 
 export async function fetchProducts({ includeInactive = false } = {}) {
   const query = includeInactive ? '?includeInactive=true' : ''
-  return apiRequest(`/products${query}`)
+  return apiRequest(`/products${query}`, { auth: includeInactive })
 }
 
 export async function fetchProductById(id) {

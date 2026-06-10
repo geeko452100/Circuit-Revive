@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useReducer } from 'react'
+import { useCallback, useEffect, useMemo, useReducer } from 'react'
 import { useProducts } from '../hooks/useProducts'
 import { calculateCustomizationPrice } from '../utils/pricing'
 import { CartContext } from './cartContext'
@@ -59,6 +59,12 @@ function cartReducer(state, action) {
     case 'CLEAR_CART':
       return { ...state, items: [] }
 
+    case 'REMOVE_STALE':
+      return {
+        ...state,
+        items: state.items.filter((item) => !action.payload.lineIds.includes(item.lineId)),
+      }
+
     case 'TOGGLE_CART':
       return { ...state, isOpen: action.payload ?? !state.isOpen }
 
@@ -71,7 +77,7 @@ const initialState = { items: [], isOpen: false }
 
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, initialState)
-  const { getProductById } = useProducts()
+  const { getProductById, loading: productsLoading } = useProducts()
 
   const addItem = useCallback((productId, selections, quantity = 1) => {
     dispatch({ type: 'ADD_ITEM', payload: { productId, selections, quantity } })
@@ -111,9 +117,21 @@ export function CartProvider({ children }) {
     [state.items, getProductById],
   )
 
+  useEffect(() => {
+    if (productsLoading) return
+
+    const staleLineIds = state.items
+      .filter((item) => !getProductById(item.productId))
+      .map((item) => item.lineId)
+
+    if (staleLineIds.length === 0) return
+
+    dispatch({ type: 'REMOVE_STALE', payload: { lineIds: staleLineIds } })
+  }, [state.items, getProductById, productsLoading])
+
   const itemCount = useMemo(
-    () => state.items.reduce((sum, item) => sum + item.quantity, 0),
-    [state.items],
+    () => enrichedItems.reduce((sum, item) => sum + item.quantity, 0),
+    [enrichedItems],
   )
 
   const subtotal = useMemo(
