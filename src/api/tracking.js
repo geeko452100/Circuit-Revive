@@ -1,65 +1,18 @@
-import { getSupabase } from '../lib/supabase'
-import { advanceMockTracking, buildMockTracking } from '../utils/mockTracking'
+import { apiRequest } from '../lib/apiClient'
 
 export async function shipOrderWithTracking(orderId, { trackingNumber, carrier = 'ups' }) {
-  const supabase = getSupabase()
-  if (!supabase) return { data: null, error: new Error('Supabase not configured') }
-
-  const trimmed = trackingNumber?.trim()
-  if (!trimmed) {
-    return { data: null, error: new Error('Tracking number is required') }
-  }
-
-  const tracking = buildMockTracking(trimmed, carrier, { stageIndex: 2 })
-
-  const { data, error } = await supabase
-    .from('orders')
-    .update({
-      status: 'shipped',
-      carrier,
-      tracking_number: trimmed,
-      shipped_at: new Date().toISOString(),
-      tracking_status: tracking,
-      tracking_updated_at: tracking.lastUpdated,
-    })
-    .eq('id', orderId)
-    .select()
-    .single()
-
-  return { data, error }
+  return apiRequest(`/tracking/${orderId}/ship`, {
+    method: 'POST',
+    body: { trackingNumber, carrier },
+    auth: true,
+  })
 }
 
 export async function refreshOrderTracking(orderId) {
-  const supabase = getSupabase()
-  if (!supabase) return { data: null, error: new Error('Supabase not configured') }
-
-  const { data: order, error: orderError } = await supabase
-    .from('orders')
-    .select('tracking_number, carrier, tracking_status')
-    .eq('id', orderId)
-    .single()
-
-  if (orderError || !order?.tracking_number) {
-    return { data: null, error: orderError ?? new Error('No tracking number on this order') }
-  }
-
-  const tracking = advanceMockTracking({
-    trackingNumber: order.tracking_number,
-    carrier: order.carrier ?? 'ups',
-    demoStage: order.tracking_status?.demoStage ?? 2,
+  return apiRequest(`/tracking/${orderId}/refresh`, {
+    method: 'POST',
+    auth: true,
   })
-
-  const { error: updateError } = await supabase
-    .from('orders')
-    .update({
-      tracking_status: tracking,
-      tracking_updated_at: tracking.lastUpdated,
-    })
-    .eq('id', orderId)
-
-  if (updateError) return { data: null, error: updateError }
-
-  return { data: tracking, error: null }
 }
 
 export function getCarrierTrackingUrl(carrier, trackingNumber) {
