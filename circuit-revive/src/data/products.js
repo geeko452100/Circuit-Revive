@@ -62,7 +62,7 @@ export const seedProducts = [
         id: 'engraving',
         label: 'Custom label engraving',
         type: 'text',
-        placeholder: 'e.g. CIRCUT REVIVE #042',
+        placeholder: 'e.g. CIRCUIT REVIVE #042',
         maxLength: 24,
         priceModifier: 15,
       },

@@ -1,4 +1,4 @@
-# Circut Revive
+# Circuit Revive
 
 A full-stack vintage tech storefront with **user-customizable product options**, powered by **React + Vite** on the frontend and **Supabase** on the backend.
 
@@ -23,7 +23,7 @@ Without Supabase credentials the app falls back to the local seed catalog; auth,
 ### 1. Install and run the frontend
 
 ```bash
-cd circut-revive
+cd circuit-revive
 npm install
 cp .env.example .env   # then fill in your Supabase values
 npm run dev
@@ -72,7 +72,7 @@ Restart `npm run dev` after changing `.env`.
 ## Project structure
 
 ```
-circut-revive/
+circuit-revive/
 ├── supabase/migrations/     # Database schema + RLS policies
 ├── scripts/seed-catalog.mjs # CLI seed helper
 ├── src/

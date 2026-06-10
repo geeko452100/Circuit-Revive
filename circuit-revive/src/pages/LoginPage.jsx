@@ -59,7 +59,7 @@ export default function LoginPage() {
         <p className="my-2 mb-5 text-text-muted">
           {mode === 'signin'
             ? 'Access saved builds and order history.'
-            : 'Join Circut Revive to save custom builds and checkout.'}
+            : 'Join Circuit Revive to save custom builds and checkout.'}
         </p>
 
         <div className="mb-5 flex gap-2">

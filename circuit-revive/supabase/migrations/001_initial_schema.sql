@@ -1,4 +1,4 @@
--- Circut Revive initial schema
+-- Circuit Revive initial schema
 -- Run in Supabase SQL Editor or via: supabase db push
 
 create extension if not exists "pgcrypto";
