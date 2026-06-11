@@ -3,7 +3,7 @@
  * flagship SKUs keep bespoke customization schemas.
  */
 
-import { engraving } from './productOptionTemplates'
+import { engraving } from './productOptionTemplates.js'
 
 function item(
   id,

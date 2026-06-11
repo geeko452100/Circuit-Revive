@@ -1,4 +1,4 @@
-import { PRODUCT_IMAGES } from '../data/productImages'
+import { PRODUCT_IMAGES } from '../data/productImages.js'
 
 function normalizeOptions(value) {
   return Array.isArray(value) ? value : []
