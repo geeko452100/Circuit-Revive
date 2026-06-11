@@ -3,9 +3,9 @@
  * Each option drives price via `priceModifier` (flat add-on in USD).
  */
 
-import { catalogEntries } from './retroCatalog'
-import { PRODUCT_IMAGES } from './productImages'
-import { OPTION_SETS } from './productOptionTemplates'
+import { catalogEntries } from './retroCatalog.js'
+import { PRODUCT_IMAGES } from './productImages.js'
+import { OPTION_SETS } from './productOptionTemplates.js'
 
 export const CATEGORIES = [
   { id: 'computers', label: 'Computers' },

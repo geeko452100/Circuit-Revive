@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { completeAuthCallback } from '../lib/authCallback'
 import { getSupabase } from '../lib/supabase'
-import { formatAuthError } from '../utils/authErrors'
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate()
@@ -16,28 +16,11 @@ export default function AuthCallbackPage() {
       return undefined
     }
 
-    async function completeAuth() {
-      const params = new URLSearchParams(window.location.search)
-      const code = params.get('code')
-
-      if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-        if (!active) return
-        if (exchangeError) {
-          setError(formatAuthError(exchangeError))
-          return
-        }
-      }
-
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession()
-
+    completeAuthCallback(supabase).then(({ session, error: callbackError }) => {
       if (!active) return
 
-      if (sessionError) {
-        setError(formatAuthError(sessionError))
+      if (callbackError) {
+        setError(callbackError)
         return
       }
 
@@ -46,10 +29,8 @@ export default function AuthCallbackPage() {
         return
       }
 
-      setError('Could not complete sign in. Request a new confirmation link and try again.')
-    }
-
-    completeAuth()
+      setError('Could not complete sign in. Return to login and try again.')
+    })
 
     return () => {
       active = false

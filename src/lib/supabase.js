@@ -10,7 +10,8 @@ export function getSupabase() {
       auth: {
         persistSession: true,
         detectSessionInUrl: true,
-        flowType: 'pkce',
+        // Implicit flow so email confirmation links work without a stored PKCE verifier.
+        flowType: 'implicit',
       },
     })
   }
