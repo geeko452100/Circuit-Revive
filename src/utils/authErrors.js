@@ -8,6 +8,8 @@ const AUTH_ERROR_MESSAGES = {
   'Email rate limit exceeded': 'Too many attempts. Wait a few minutes and try again.',
   'For security purposes, you can only request this once every 60 seconds':
     'Too many attempts. Wait a minute and try again.',
+  'PKCE code verifier not found in storage. This can happen if the auth flow was initiated in a different browser or device, or if the storage was cleared. For SSR frameworks (Next.js, SvelteKit, etc.), use @supabase/ssr on both the server and client to store the code verifier in cookies.':
+    'Open the email link in the same browser where you signed up, or confirm your email and sign in with your password instead.',
 }
 
 export function formatAuthError(error) {
