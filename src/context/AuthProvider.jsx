@@ -18,6 +18,25 @@ async function loadProfile(supabase, userId) {
   return data
 }
 
+async function ensureProfile(supabase, user) {
+  const existing = await loadProfile(supabase, user.id)
+  if (existing) return existing
+
+  const metadataName = user.user_metadata?.full_name?.trim()
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert({
+      id: user.id,
+      email: user.email,
+      full_name: metadataName || user.email?.split('@')[0] || null,
+    })
+    .select()
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
 async function loadProfileWithRetry(supabase, userId) {
   for (let attempt = 0; attempt < PROFILE_MAX_ATTEMPTS; attempt += 1) {
     const data = await loadProfile(supabase, userId)
@@ -52,6 +71,10 @@ export function AuthProvider({ children }) {
     try {
       let data = await loadProfileWithRetry(supabase, userId)
       const metadataName = authUser?.user_metadata?.full_name?.trim()
+
+      if (!data && authUser) {
+        data = await ensureProfile(supabase, authUser)
+      }
 
       if (data && !data.full_name?.trim() && metadataName) {
         const { data: updated, error: updateError } = await supabase
@@ -140,7 +163,7 @@ export function AuthProvider({ children }) {
       password: normalizedPassword,
       options: {
         data: { full_name: normalizedName || undefined },
-        emailRedirectTo: `${window.location.origin}/login`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
 
@@ -211,6 +234,71 @@ export function AuthProvider({ children }) {
     setProfileLoading(false)
   }, [])
 
+  const resetPassword = useCallback(async (email) => {
+    setAuthError(null)
+    const supabase = getSupabase()
+    if (!supabase) {
+      const err = new Error('Supabase is not configured')
+      setAuthError(err.message)
+      return { error: err }
+    }
+
+    const normalizedEmail = normalizeAuthInput(email)
+    if (!normalizedEmail) {
+      const err = new Error('Email is required.')
+      setAuthError(err.message)
+      return { error: err }
+    }
+
+    const { data, error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    })
+
+    if (error) {
+      setAuthError(formatAuthError(error))
+      return { data, error }
+    }
+
+    return { data, error: null }
+  }, [])
+
+  const updatePassword = useCallback(async (password) => {
+    setAuthError(null)
+    const supabase = getSupabase()
+    if (!supabase) {
+      const err = new Error('Supabase is not configured')
+      setAuthError(err.message)
+      return { error: err }
+    }
+
+    const normalizedPassword = normalizeAuthInput(password)
+    if (!normalizedPassword) {
+      const err = new Error('Password is required.')
+      setAuthError(err.message)
+      return { error: err }
+    }
+
+    if (normalizedPassword.length < 6) {
+      const err = new Error('Password must be at least 6 characters.')
+      setAuthError(err.message)
+      return { error: err }
+    }
+
+    const { data, error } = await supabase.auth.updateUser({ password: normalizedPassword })
+
+    if (error) {
+      setAuthError(formatAuthError(error))
+      return { data, error }
+    }
+
+    if (data.user) {
+      setUser(data.user)
+      await refreshProfile(data.user.id, data.user)
+    }
+
+    return { data, error: null }
+  }, [refreshProfile])
+
   const value = useMemo(
     () => ({
       user,
@@ -224,6 +312,8 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       signOut,
+      resetPassword,
+      updatePassword,
       refreshProfile,
       clearAuthError,
     }),
@@ -236,6 +326,8 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       signOut,
+      resetPassword,
+      updatePassword,
       refreshProfile,
       clearAuthError,
     ],

@@ -6,7 +6,14 @@ let client = null
 export function getSupabase() {
   if (!isSupabaseConfigured) return null
   if (!client) {
-    client = createClient(supabaseConfig.url, supabaseConfig.anonKey)
+    client = createClient(supabaseConfig.url, supabaseConfig.anonKey, {
+      auth: {
+        persistSession: true,
+        detectSessionInUrl: true,
+        // Implicit flow so email confirmation links work without a stored PKCE verifier.
+        flowType: 'implicit',
+      },
+    })
   }
   return client
 }
